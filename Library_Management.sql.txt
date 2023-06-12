@@ -1,0 +1,180 @@
+create database library;
+use library;
+
+create table Branch(
+Branch_no int primary key,
+Manager_id int,
+Branch_address varchar(255),
+Contact_no varchar(15)
+);
+insert into Branch values
+ (1,101,"123Main Street",555-123-4567),
+ (2,102,"456Elm Avenue",555-987-6543),
+ (3,103,"789Oak Lake",555-555-5555),
+ (4,104,"321-Pine Road",555-222-3333),
+ (5,105,"987Maple Drive",555-444-7777),
+ (6,106,"654Cedar Boulevard",555-888-9999),
+ (7,107,"321Elm Street",555-111-2222),
+ (8,108,"789Oak Avenue",555-333-4444);
+ 
+create table Employee(
+Emp_id int primary key,
+Emp_name varchar(255),
+Position varchar(255),
+salary decimal(10, 2),
+Branch_no INT,
+FOREIGN KEY (Branch_no) REFERENCES Branch(Branch_no)
+);
+
+
+insert into Employee values
+ (101,"John Smith","Manager",50000.00,1),
+ (102,"Monica Geller","Assistant",30000.00,2),
+ (103,"Chandler Bing","Librarian",55000.00,3),
+ (104,"Joe Tribbini","Clerk",40000.00,4),
+ (105,"Phoebe Buffey","Accountant",20000.00,5),
+ (106,"Ross Geller","Assistant",60000.00,6),
+ (107,"Rchiel Green","Librabrian",40000.00,7),
+ (108,"Jessica Moore","Clerk",35000.00,8);
+ 
+create table Customer(
+Customer_id int primary key,
+Customer_name varchar(255),
+Customer_Address varchar(255),
+Reg_Date date
+);
+
+insert into Customer values
+ (1,"Alice Johnson","123Min Street","2022-01-15"),
+ (2,"Bob Smith","456Elm Venue","2021-08-12"),
+ (3,"Charlie","789Oak Lane","2022-03-10"),
+ (4,"David Wilson","321Pine Road","2023-06-20"),
+ (5,"Emily Davis","987Maple Street","2022-05-12"),
+ (6,"Frank Thomas","654Tree House","2022-06-18"),
+ (7,"Grace Miller","321Elm Villa","2023-06-01"),
+ (8,"Henry John","789Oak Avenue","2021-03-10");
+ 
+create table IssueStatus(
+Issue_id int primary key,
+Issued_Cust int,
+Issued_Book_Name varchar(255),
+Issued_Date date,
+Isbn_Book varchar(255),
+foreign key(Issued_Cust) references Customer(Customer_id),
+foreign key(Isbn_Book) references Books(ISBN)
+);
+
+insert into IssueStatus values
+ (1,1,"Book A","2023-06-25","ISBN001"),
+ (2,2,"Book B","2022-02-25","ISBN002"),
+ (3,3,"Book C","2022-03-15","ISBN003"),
+ (4,4,"Book D","2022-04-10","ISBN004");
+ 
+create table ReturnStatus(
+Return_id int primary key,
+Return_Cust int,
+Return_Book_Name varchar(255),
+Return_Date date,
+Isbn_Book2 varchar(255),
+foreign key (Return_Cust) references Customer(Customer_id),
+foreign key (Isbn_Book2) references Books (ISBN)
+);
+ 
+insert into ReturnStatus values
+ (1,1,"Book A","2022-02-10","ISBN001"),
+ (2,2,"Book B","2022-03-05","ISBN002"),
+ (3,3,"Book C","2022-04-20","ISBN003"),
+ (4,4,"Book D","2022-05-15","ISBN004"),
+ (5,5,"Book E","2022-06-25","ISBN005"),
+ (6,6,"Book F","2022-07-12","ISBN006"),
+ (7,7,"Book G","2022-08-18","ISBN007"),
+ (8,8,"Book H","2022-09-30","ISBN008");
+ 
+create table Books(
+ISBN varchar(255) primary key,
+Book_Title varchar(255),
+Category varchar(255),
+Rental_Price decimal(10, 2),
+Status enum("yes", "no"),
+Author varchar(255),
+Publisher varchar(255)
+);
+
+insert into Books values
+ ("ISBN001","Book A","Fiction","10.99","yes","John Smith","abc publishers"),
+ ("ISBN002","Book B","Horror","9.99","yes","Monica Geller","xyz publishers"),
+ ("ISBN003","Book C","Fantasy","12.99","no","Chandler Bing","kjh publishers"),
+ ("ISBN004","Book D","Romance","8.99","yes","Joey Tribbini","hgf publishers"),
+ ("ISBN005","Book E","Thriller","11.99","no","Phoebe Buffey","uiy publishers"),
+ ("ISBN006","Book F","Science","7.99","yes","Ross Geller","ert publishers"),
+ ("ISBN007","Book G","Biology","10.99","yes","Rachiel Green","asd publishers"),
+ ("ISBN008","Book h","History","9.99","no","Jessica Moore","qwe publishers");
+ 
+1.  Retrieve the book title, category, and rental price of all available 
+books. 
+
+select Book_Title, Category, Rental_Price
+from Books
+where Status = "yes";
+
+2.   List the employee names and their respective salaries in descending 
+
+select Emp_name, Salary
+from Employee
+order by Salary desc;
+
+3.  Retrieve the book titles and the corresponding customers who have 
+
+select b.Book_Title, c.Customer_name
+from IssueStatus i
+join Books b on i.Isbn_Book = b.ISBN
+join Customer c on i.Issued_Cust = c.Customer_id;
+
+4.  Display the total count of books in each category. 
+
+select Category, count(*) as Total_Count
+from Books
+group by Category;
+
+5.  Retrieve the employee names and their positions for the employees 
+
+select Emp_name, Position
+from Employee
+where Salary>50000;
+
+6.  List the customer names who registered before 2022-01-01 and have not issued any books yet. 
+
+select Customer_name
+from Customer
+where Reg_Date < "2022-01-01" and Customer_id not in (
+    select Issued_Cust
+    from IssueStatus
+);
+
+7.  Display the branch numbers and the total count of employees in each 
+branch. 
+
+select Branch_no, count(*) as Total_Employees
+from Employee
+group by Branch_no;
+
+8.  Display the names of customers who have issued books in the month 
+
+select c.Customer_name
+from Customer c
+join IssueStatus i on c.Customer_id = i.Issued_Cust
+where month(i.Issued_Date) = 6 and year(i.Issued_Date) = 2023;
+
+9.  Retrieve book_title from book table containing history
+
+select Book_Title
+from Books
+where Category = "History";
+
+10. Retrieve the branch numbers along with the count of employees for 
+branches having more than 5 employees
+
+select Branch_no, count(*) as Total_Employees
+from Employee
+group by Branch_no
+having count(*) > 5;
